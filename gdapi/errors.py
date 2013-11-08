@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 
-
+class ImproperlyConfiguredError(Exception):
+    pass
+    
 class GoogleApiError(Exception):
     """An exception thrown when a Drive API return non-2xx status code"""
     default_message = 'code: %(_code)s , message: %(_message)s'

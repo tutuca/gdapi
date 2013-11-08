@@ -8,7 +8,7 @@ try:
 except ImportError:
     from urllib.parse import urljoin  # 3.*
 from .utils import retry
-from .errors import GoogleApiError
+from .errors import GoogleApiError, ImproperlyConfiguredError
 
 
 class APIRequest(object):
@@ -27,19 +27,22 @@ class APIRequest(object):
         """
         self._logger = logging.getLogger(u"gdapi.%s" % self.__class__.__name__)
         self._credential = {'access_token': 'N/A'}
-        self._credential_path = credential_path
+        self._credential_path = self._read_credential_file(credential_path)
         self._error = {'code': 0, 'reason': ''}
-        self._read_credential_file()
+        
         self._default_headers = {
             'content-type': 'application/json',
             'Authorization': 'Bearer {0}'.format(
                 self._credential['access_token']),
         }
 
-    def _read_credential_file(self):
-        if os.path.isfile(self._credential_path):
-            with open(self._credential_path, 'r') as fin:
+    def _read_credential_file(self, credential_path):
+        if os.path.exists(credential_path):
+            with open(credential_path, 'r') as fin:
                 self._credential.update(json.load(fin))
+        else:
+            raise ImproperlyConfiguredError('Credential file does not exists.')
+
 
     def _save_credential_file(self):
         with open(self._credential_path, 'w') as f:
